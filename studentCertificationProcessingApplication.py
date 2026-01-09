@@ -26,6 +26,8 @@ def result(score):
         return 'Fail'
     
 def overallAverage(totalModuleScores, numberOfmodules):
+    if numberOfmodules == 0:
+        return 0
     return totalModuleScores / numberOfmodules
 
 #main program
@@ -46,11 +48,18 @@ while runAgain == 'Y':
 
     #get 5 module scores
     for i in range(len(modules)):
-        scores = int(input(f"Enter score for {modules[i]}: "))
+        validInput = False
+        while validInput == False:
+            try:
+                scores = int(input(f"Enter score for {modules[i]}: "))
+                validInput = True
+            except ValueError:
+                print("Invalid input. Please enter a Number.")
+
         moduleScores[i] = scores
         totalModuleScores = totalModuleScores + scores
 
-        avg = overallAverage(totalModuleScores, len(modules))
+    avg = overallAverage(totalModuleScores, len(modules))
 
     #output results
     print("")
@@ -68,10 +77,17 @@ while runAgain == 'Y':
     print("--------------------------------------------")
     print("Overall Average Score:", avg)
 
-    if avg >= 50:
-        overall = "Pass"
+    allmodulesPassed = True
+
+    for i in range(len(modules)):
+        if result(moduleScores[i]) == 'Fail':
+            allmodulesPassed = False
+            break
+
+    if allmodulesPassed ==True:
+        overall = 'Pass'
     else:
-        overall = "Fail"
+        overall = 'Fail'
 
     print("")
     print("----------------Result Sheet------------------------")    
@@ -93,20 +109,33 @@ while runAgain == 'Y':
     print("Candidates must achieve an overall average of at least 50 to pass the certification.")
     print("------------------------------------------------------------")    
 
-    csvFile = open("results.csv", "a")
+    try:
+        csvFile = open("results.csv", "a")
 
-    csvLine = candidatesName + "," + certificationName
+        csvLine = candidatesName + "," + certificationName
 
-    for i in range(len(modules)):
-        csvLine = csvLine + "," + modules[i] + "," + str(moduleScores[i])
+        for i in range(len(modules)):
+            csvLine = csvLine + "," + modules[i] + "," + str(moduleScores[i])
 
-    csvFile.write(csvLine + "\n")
-    csvFile.close()
+        csvFile.write(csvLine + "\n")
+        csvFile.close()
+    except:
+        print("Error: Could not write to results.csv file.")
 
-    logFile = open("processingLog.txt", "a")
-    logFile.write(candidatesName + "," + certificationName + "," + overall + "\n")    
-    logFile.close()
+    try:
+        logFile = open("processingLog.txt", "a")
+        logFile.write(candidatesName + "," + certificationName + "," + overall + "\n")    
+        logFile.close()
+    except:
+        print("Error: Could not write to processingLog.txt file.")
 
     print("--------------------------------------------")
-    runAgain = input("Do you want to process another candidate? (Y/N): ").upper()
+    validChoice = False
+    while validChoice == False:
+        runAgain = input("Do you want to process another candidate? (Y/N): ").upper()
+        if runAgain == 'Y' or runAgain == 'N':
+            validChoice = True
+        else:
+            print("Invalid choice. Please enter Y or N.")
+
 exitMessage()
